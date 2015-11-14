@@ -1,0 +1,350 @@
+@echo off 
+setlocal enabledelayedexpansion
+:::http://www.vbforums.com/showthread.php?185405-Set-Author-property-in-MS-Word-Document
+:::http://www.vbforums.com/showthread.php?225661-How-can-I-get-custom-file-properties
+::: -- Version History �-
+:::(Major version).(Minor version).(Revision number).(Build number) 
+:::          XX.XXX         YYYYMMDD Author Description
+SET "version=01.0.00-beta" &:20110322 C.Reyes   initial version, providing the framework
+SET "version=01.0.01"      &:20110406 C.Reyes   framework ready
+SET "version=01.0.02"      &:20110413 C.Reyes   added Date and time format output
+SET "version=02.0.03"      &:20110418 C.Reyes   added Date and time format, file output
+SET "version=03.0.01"      &:20110727 C.Reyes   added Date and time format,assembly, top/sub format output
+SET "version=03.0.02"      &:20110922 C.Reyes   added completed and logging text to folders
+SET "version=03.0.03"      &:20120822 C.Reyes   added move, completed, archive and logging text to folders 
+SET "version=03.0.04"      &:20120824 C.Reyes   added pdf generator
+SET "version=03.0.041"     &:20130523 C.Reyes   added .LOG for echo
+SET "version=04.0.0"       &:20131005 C.Reyes   converted to MS Word based format
+SET "version=05.0.0"       &:20131007 C.Reyes   complete overhaul from "txt" ext to "doc" ext.
+SET "version=05.1.0"       &:20131008 C.Reyes   added header and footer info
+SET "version=05.1.1"       &:20131008 C.Reyes   added Document Properties
+SET "version=05.1.2"       &:20131014 C.Reyes   added comments to add Macro in MS Word
+SET "version=05.1.3"       &:20131015 C.Reyes   Modified Doc Properties to include w/o, p/n, and s/n :word_generator_5_revK.vbs
+SET "version=05.2.0"       &:20140409 C.Reyes   Added serial number for authenticity: Assembly_FILE_log_revK.bat
+SET "version=05.2.1"       &:20140610 C.Reyes   Added Manual Timestamp entry: Assembly_FILE_log_revM.bat
+SET "version=05.3.0"       &:20140813 C.Reyes   Added Uppercase format: Assembly_FILE_log_revP.bat
+SET "version=05.3.1"       &:20141003 C.Reyes   Added Keywords properties: Assembly_FILE_log_revR.bat
+SET "version=05.3.2"       &:20150715 C.Reyes   Added Keywords properties: Assembly_FILE_log_revT.bat
+SET "title=%~nx0 - version %version%"
+title %title%
+SET SUBDIR=%~dp0
+cd ..
+cd \logfile
+if EXIST closed goto entry
+if NOT EXIST closed goto closedlogfile
+if EXIST ncr goto entry
+if NOT EXIST ncr goto ncrlogfile
+if EXIST devtrack goto entry
+if NOT EXIST devtrack goto devtracklogfile
+if EXIST archive_passdown goto entry
+if NOT EXIST archive_passdown goto archivelogfile
+if EXIST complete goto entry
+if NOT EXIST complete goto completedlogfile
+:entry
+FOR /F "TOKENS=1* DELIMS= " %%A IN ('DATE/T') DO SET CDATE=%%B
+FOR /F "TOKENS=1,2 eol=/ DELIMS=/ " %%A IN ('DATE/T') DO SET mm=%%B
+FOR /F "TOKENS=1,2 DELIMS=/ eol=/" %%A IN ('echo %CDATE%') DO SET dd=%%B
+FOR /F "TOKENS=2,3 DELIMS=/ " %%A IN ('echo %CDATE%') DO SET yyyy=%%B
+if %MM%==01 set MM=Jan
+if %MM%==02 set MM=Feb
+if %MM%==03 set MM=Mar
+if %MM%==04 set MM=Apr
+if %MM%==05 set MM=May
+if %MM%==06 set MM=Jun
+if %MM%==07 set MM=Jul
+if %MM%==08 set MM=Aug
+if %MM%==09 set MM=Sep
+if %MM%==10 set MM=Oct
+if %MM%==11 set MM=Nov
+if %MM%==12 set MM=Dec
+
+SET date=%dd%%mm%%yyyy%
+
+@For /F "tokens=1,2,3 delims=:,. " %%A in ('echo %time%') do @(
+Set Hour=%%A
+Set Min=%%B
+Set Sec=%%C
+Set Allm=%%A.%%B.%%C
+)
+@For /F "tokens=3 delims=: " %%A in ('time /t ') do @(
+Set AMPM=%%A
+)
+set /p wo=Enter Work Order: 
+(if "%wo%"=="" set wo=NA)
+set /p op=Enter Operation:
+(if "%op%"=="" set op=NA)
+set /p gapn=Enter  p/n:
+(if "%gapn%"=="" set gapn=NA)
+set /p rev=Enter Revision:
+(if "%rev%"=="" set rev=NA)
+set /p gasn=Enter Serial No.:
+(if "%gasn%"=="" set gasn=NA)
+set /p ptp=Enter ptp No.:
+(if "%ptp%"=="" set ptp=NA)
+set /p par=Enter paragraph No.:
+(if "%par%"=="" set par=NA)
+set /p ncr=RMA No.:
+(if "%ncr%"=="" set ncr=)
+set /p sta=Enter Station number:
+(if "%sta%"=="" set sta=NA)
+set /p tel=Enter Tel. number:
+(if "%tel%"=="" set tel=N/A)
+set /p lvl=Enter [TOP/SUB] assembly:
+(if "%lvl%"=="" set lvl=NA_)
+set /p passdown=Enter Comment:
+(if "%passdown%"=="" set passdown=EOF)
+:more
+set /p choice=Enter More?[Y/N]:
+if /I not '%choice%'=='' set choice=%choice:~0,1%
+if /I '%choice%' EQU 'y' goto line
+if /I '%choice%' EQU 'n' goto tex
+echo '%choice%' is not a valid (answer/command). Please try again.
+pause > nul
+goto more
+:line
+set /p line2=Continue comment:
+(if "%line2%"=="" set line2=EOF)
+:tex
+set Scr="%temp%\TempVBS.vbs"
+if exist %Scr% del %Scr%
+echo>>%Scr% ' ^|Name: word_generator_5_revH.vbs
+echo>>%Scr% ' ^|--------------------------------------------------------------------------
+echo>>%Scr% ' ^|Script generates Word Document with set parameters for the USER.
+echo>>%Scr% ' ^|Word document is saved to the file specified.
+echo>>%Scr% ' ^|
+echo>>%Scr% ' ^|  Syntax:  ^>cscript word_generator_5_revH.vbs
+echo>>%Scr% ' ^|--------------------------------------------------------------------------
+echo>>%Scr% ' ^|Version: 1.0   - initial release - BETA
+echo>>%Scr% ' ^|Version: 1.1   - Generated basic word format 
+echo>>%Scr% ' ^|Version: 1.2   - Added Paragraph text size and Date Time syntax :word_generator_2.vbs
+echo>>%Scr% ' ^|Version: 1.2.1 - Added Paragraph alignment syntax :word_generator_2.vbs
+echo>>%Scr% ' ^|Version: 1.3   - Added Spacing before and after sentence syntax :word_generator_5_revB.vbs
+echo>>%Scr% ' ^|Version: 1.3.1 - Added more paragraphs :word_generator_5_revC.vbs
+echo>>%Scr% ' ^|Version: 1.3.2 - Added CLI Variables to VBS :word_generator_5_revD.vbs
+echo>>%Scr% ' ^|Version: 1.3.3 - Clean up :added only entries required for logging. :word_generator_5_revE.vbs
+echo>>%Scr% ' ^|Version: 1.3.4 - Cleaned up redundant syntax staments, reduced syntax lines :word_generator_5_revF.vbs
+echo>>%Scr% ' ^|Version: 1.3.5 - Added Page size and Margins settings syntax :word_generator_5_revF.vbs 
+echo>>%Scr% ' ^|Version: 1.3.6 - Added Header and footer syntax :word_generator_5_revF.vbs
+echo>>%Scr% ' ^|Version: 1.3.7 - Added Document Properties : word_generator_5_revF.vbs
+echo>>%Scr% ' ^|Version: 1.4   - Changed header/footer format style :word_generator_5_revG.vbs 
+echo>>%Scr% ' ^|Version: 1.5   - Created Word file to standard user profile to my documents : word_generator_5_revG.vbs
+echo>>%Scr% ' ^|Version: 1.6   - Added Version history : word_generator_5_revH.vbs
+echo>>%Scr% ' ^|Version: 1.6.1 - Added BarCode to Header : word_generator_5_revJ.vbs
+echo>>%Scr% ' ^|Version: 1.6.2 - Modified Doc Properties to include w/o, p/n, and s/n : word_generator_5_revJ.vbs
+echo>>%Scr% ' ^|Version: 1.6.3 - Modified original code back to ver. 1.6 : word_generator_5_revK.vbs
+echo>>%Scr% ' ^|Version: 1.6.3 - retained Doc Properties from ver. 1.6.2 : word_generator_5_revK.vbs
+echo>>%Scr% ' ^|Version: 1.7.0 - Added Uppercase format : word_generator_5_revP.vbs
+echo>>%Scr% ' ^|Version: 1.7.1 - Added Keyword properties : word_generator_5_revR.vbs
+echo>>%Scr% ' ^|--------------------------------------------------------------------------
+echo>>%Scr% ' ^|Author: Clemente Reyes
+echo>>%Scr% ' ^|--------------------------------------------------------------------------
+echo>>%Scr% ' create word object
+echo>>%Scr% set obj = CreateObject("Scriptlet.TypeLib")  
+echo>>%Scr% Set objWord = CreateObject("Word.Application")
+echo>>%Scr%  objWord.Visible = True
+echo>>%Scr%  ' add a document
+echo>>%Scr% Set objDoc = objWord.Documents.Add()
+echo>>%Scr% set oBuiltInProps = objDoc.BuiltInDocumentProperties
+echo>>%Scr% 'Headers
+echo>>%Scr% objDoc.Sections(1).Headers(1).Range.font.Size = 18
+echo>>%Scr% objDoc.Sections(1).Headers(1).Range.font.Bold = False
+echo>>%Scr% objDoc.Sections(1).Headers(1).Range.font.Italic = False
+echo>>%Scr% 'objDoc.Sections(1).Headers(1).Range.font.Color = wdColorBlue
+echo>>%Scr% objDoc.Sections(1).Headers(1).Range.Text = "w/o: " ^& Ucase("%wo%")
+echo>>%Scr% objDoc.Sections(1).Headers(1).Range.ParagraphFormat.Alignment = 1
+echo>>%Scr% 'footers
+echo>>%Scr% objDoc.Sections(1).Footers(1).Range.Font.Size = 5
+echo>>%Scr% objDoc.Sections(1).Footers(1).Range.Font.Bold = False
+echo>>%Scr% objDoc.Sections(1).Footers(1).Range.Font.Italic = False
+echo>>%Scr% objDoc.Sections(1).Footers(1).Range.Font.Color = wdColorBlue
+echo>>%Scr% objDoc.Sections(1).Footers(1).Range.Text = "" ^& vbTab ^& Ucase("%lvl%Assembly_%wo%_%gapn%_%gasn%_%ncr%_%date%_%Allm%%AMPM%") ^& vbTab ^& ""
+echo>>%Scr% 'objDoc.Sections(1).Footers(1).Range.Text = Ucase("%title%")
+echo>>%Scr% objDoc.Sections(1).Footers(1).Range.ParagraphFormat.Alignment = 1
+echo>>%Scr%   'Const wdOrientLandscape = 1
+echo>>%Scr%  Const wdOrientPortrait = 0
+echo>>%Scr% With objWord.ActiveDocument.PageSetup
+echo>>%Scr% '.Orientation = wdOrientLandscape
+echo>>%Scr% .TopMargin = objWord.InchesToPoints(0.5)
+echo>>%Scr% .BottomMargin = objWord.InchesToPoints(0.5)
+echo>>%Scr% .LeftMargin = objWord.InchesToPoints(0.2)
+echo>>%Scr% .RightMargin = objWord.InchesToPoints(0.2)
+echo>>%Scr% .PageWidth = objWord.InchesToPoints(8.5)
+echo>>%Scr% .PageHeight = objWord.InchesToPoints(11)
+echo>>%Scr% End With
+echo>>%Scr% ' obtain selection handler
+echo>>%Scr% Set objSelection = objWord.Selection
+echo>>%Scr%  objSelection.Paragraphs.SpaceAfter = 0
+echo>>%Scr% ' set the font and add a text paragraph 0 
+echo>>%Scr% objSelection.ParagraphFormat.Alignment = 2 
+echo>>%Scr% '0 - Aligns text to Left, 1- Aligns text to center
+echo>>%Scr% '2 - Aligns text to Right, 3 - Justify the text
+echo>>%Scr% objSelection.Font.Size = "10"
+echo>>%Scr% objSelection.TypeText "" ^& (FormatDateTime(Now(),vbLongDate)) ^& " - " ^& FormatDateTime(now, 4)
+echo>>%Scr% objSelection.TypeParagraph()
+echo>>%Scr% ' set the font and add a text paragraph 4
+echo>>%Scr% objSelection.ParagraphFormat.Alignment = 0 
+echo>>%Scr% '0 - Aligns text to Left, 1- Aligns text to center
+echo>>%Scr% '2 - Aligns text to Right, 3 - Justify the text
+echo>>%Scr% objSelection.Font.Color = Black 
+echo>>%Scr% 'objSelection.Font.Underline = true 
+echo>>%Scr% objSelection.Font.Bold = True
+echo>>%Scr% objSelection.Font.Name = "Times New Roman"
+echo>>%Scr% objSelection.Font.Size = "10"
+echo>>%Scr% objSelection.TypeText "Name: %Username%" ^& vbcrlf
+echo>>%Scr% objSelection.TypeText "  Test Station #: " ^& Ucase("%sta%") ^& vbcrlf  'paragraph 8 
+echo>>%Scr% objSelection.TypeText "  Computer Name: %computername%" ^& vbcrlf 
+echo>>%Scr% objSelection.TypeText "Path: %CD%" ^& vbcrlf
+echo>>%Scr% objSelection.TypeText "Telephone: %tel%" ^& vbcrlf
+echo>>%Scr% objSelection.TypeParagraph()
+echo>>%Scr% 'Main body
+echo>>%Scr% ' set the font and add a text paragraph 9
+echo>>%Scr% objSelection.ParagraphFormat.Alignment = 0 
+echo>>%Scr% '0 - Aligns text to Left, 1- Aligns text to center
+echo>>%Scr% '2 - Aligns text to Right, 3 - Justify the text
+echo>>%Scr% objSelection.Font.Color = Black 
+echo>>%Scr% 'objSelection.Font.Underline = true 
+echo>>%Scr% objSelection.Font.Bold = True
+echo>>%Scr% objSelection.Font.Name = "Times New Roman"
+echo>>%Scr% objSelection.Font.Size = "10"
+echo>>%Scr% objSelection.TypeText "w/o: " ^& Ucase("%wo%") ^& vbcrlf
+echo>>%Scr% objSelection.TypeText "Operation:  %op%" ^& vbcrlf 
+echo>>%Scr% objSelection.TypeText "p/n: " ^& Ucase("%gapn%") ^& vbcrlf 
+echo>>%Scr% objSelection.TypeText "Revision: " ^& Ucase("%rev%") ^& vbcrlf 
+echo>>%Scr% objSelection.TypeText " Serial #: " ^& Ucase("%gasn%") ^& vbcrlf 
+echo>>%Scr% objSelection.TypeText "-PTP #: %ptp%" ^& vbcrlf 
+echo>>%Scr% objSelection.TypeText "-Par. #: %par%" ^& vbcrlf '^&Chr(11)'paragraph 7
+::echo>>%Scr% objSelection.TypeText "Comments:" ^& vbcrlf 
+echo>>%Scr% objSelection.TypeText "-Description of the PASS/failure [e.g.:  HI/Lo, should be, Measured value, etc...]" ^& vbcrlf
+echo>>%Scr% objSelection.TypeText "RMA #: " ^& Ucase("%ncr%") 
+echo>>%Scr% objSelection.TypeParagraph()
+echo>>%Scr% ' set the font and add a text paragraph 9
+echo>>%Scr% objSelection.ParagraphFormat.Alignment = 0 
+echo>>%Scr% '0 - Aligns text to Left, 1- Aligns text to center
+echo>>%Scr% '2 - Aligns text to Right, 3 - Justify the text
+echo>>%Scr% objSelection.Font.Bold = False
+echo>>%Scr% objSelection.Font.Name = "Times New Roman"
+echo>>%Scr% objSelection.Font.Size = "12"
+echo>>%Scr% objSelection.Font.Color = black
+echo>>%Scr% objSelection.TypeText "        %passdown%" 
+echo>>%Scr% objSelection.TypeParagraph()
+echo>>%Scr% objSelection.Paragraphs.SpaceBefore = 0
+echo>>%Scr% 'Set Built-in Document Properties collection.
+echo>>%Scr%         'oBuiltInProps = objDoc.BuiltInDocumentProperties
+echo>>%Scr%         'Get the value of the Author property and display it
+echo>>%Scr%         oBuiltInProps.Item("Author").Value = "%Username%"
+echo>>%Scr% 'Set the value of the Subject property.
+echo>>%Scr%         oBuiltInProps.Item("Subject").Value = _
+echo>>%Scr%                   "w/o: " ^& Ucase("%wo%") ^& " p/n: " ^& Ucase("%gapn%") ^& " s/n: " ^& Ucase("%gasn%")
+echo>>%Scr%  'Set the value of the Title property.
+echo>>%Scr%         oBuiltInProps.Item("Title").Value = _
+echo>>%Scr%                   "Production Passdown"
+echo>>%Scr% 'Set the value of the Comments property.
+echo>>%Scr%         oBuiltInProps.Item("Comments").Value = _
+echo>>%Scr%                   Ucase("%lvl%Assembly_%wo%_%gapn%_%gasn%_%ncr%_%date%_%Allm%%AMPM%") ^& vbcrLF ^& "File generated by: " ^& vbcrlf ^& "   %title%" ^& vbCRLF ^&_
+echo>>%Scr%                   "Serial Number: " ^& obj.GUID
+echo>>%Scr% 'Set the value of the Keyword property.
+echo>>%Scr%         oBuiltInProps.Item("Keywords").Value = _
+echo>>%Scr%                   "w/o: " ^& Ucase("%wo%") ^& " p/n: " ^& Ucase("%gapn%") ^& " s/n: " ^& Ucase("%gasn%")
+echo>>%Scr% ' bring to front
+echo>>%Scr% objWord.Application.Activate
+echo>>%Scr% objWord.Application.WindowState = wdWindowStateMaximize
+echo>>%Scr% CreateObject("WScript.Shell").AppActivate objDoc.Name
+echo>>%Scr% 'you can change the path wher the file is saved ("U:\filepath\folder\bla..bla..bla")
+echo>>%Scr% objDoc.SaveAs(Ucase("c:\logfile\%lvl%Assembly_%wo%_%gapn%_%gasn%_%ncr%_%date%_%Allm%%AMPM%.doc"))
+echo>>%Scr% 'call msgbox("                                                       Your File has been Generated!!^^!" ^& vbcrlf ^& "Your file is located at:" ^& vbcrlf ^& "%userprofile%\My Documents\%lvl%Assembly_%wo%_%gapn%_%gasn%_%ncr%_%date%_%Allm%%AMPM%.doc ")
+echo>>%Scr% ' ^|Name: log3.vbs
+echo>>%Scr% ' ^|--------------------------------------------------------------------------
+echo>>%Scr% ' ^|Adding a macro to MS WOrd Document
+echo>>%Scr% ' ^|See webpage for details:
+echo>>%Scr% ' ^|     http://www.support.com/blog/post/how-use-macro-microsoft%C2%AE-word-2007
+echo>>%Scr% ' ^|  
+echo>>%Scr% ' ^|--------------------------------------------------------------------------
+echo>>%Scr% ' ^|--------------------------------------------------------------------------
+echo>>%Scr% ' ^|Author: Clemente Reyes
+echo>>%Scr% ' ^|--------------------------------------------------------------------------
+echo>>%Scr% '********************************
+echo>>%Scr% '** Parameters (DO NOT CHANGE) **
+echo>>%Scr% '********************************
+echo>>%Scr% ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+echo>>%Scr% ' Start of Script
+echo>>%Scr% ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+echo>>%Scr% 'Sub AutoOpen()
+echo>>%Scr% 'Dim oRng As Range
+echo>>%Scr% 'If ActiveDocument.Type ^<^> wdTypeTemplate Then
+echo>>%Scr% '    If Len(ActiveDocument.Path) ^<^> 0 Then
+echo>>%Scr% '        ActiveDocument.Range.InsertParagraphAfter
+echo>>%Scr% '    End If
+echo>>%Scr% '    Set oRng = ActiveDocument.Range
+echo>>%Scr% '    oRng.Start = oRng.End
+echo>>%Scr% '    oRng.Text = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" _
+echo>>%Scr% '     ^& vbcrlf ^& Chr(91) ^& Format(Date, "MM/dd/yyyy - ") ^& Format(Time, "hh:mm am/pm") ^& Chr(93) ^& vbcrlf
+echo>>%Scr% '    oRng.Start = ActiveDocument.Range.End
+echo>>%Scr% '    oRng.Select
+echo>>%Scr% 'End If
+echo>>%Scr% 'End Sub
+echo>>%Scr% '
+echo>>%Scr% 'Sub AutoNew()
+echo>>%Scr% 'Dim oRng As Range
+echo>>%Scr% 'Set oRng = ActiveDocument.Range
+echo>>%Scr% 'oRng.Text = Format(Date, "dd/MM/yyyy - ") ^& Format(Time, "hh:mm am/pm ")
+echo>>%Scr% 'oRng.Start = ActiveDocument.Range.End
+echo>>%Scr% 'oRng.Select
+echo>>%Scr% 'End Sub
+echo>>%Scr% '
+echo>>%Scr% 'Insert Timestamp manually
+echo>>%Scr% 'Using the Selection object and the TypeText method
+echo>>%Scr% 'http://support.microsoft.com/kb/212682
+echo>>%Scr% 'Sub ManualInsertTimestamp()
+echo>>%Scr% '  Dim MyText As String
+echo>>%Scr% '  MyText = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" _
+echo>>%Scr% '     & vbCrLf & Chr(91) & Format(Date, "MM/dd/yyyy - ") & Format(Time, "hh:mm am/pm") & Chr(93) & vbCrLf
+echo>>%Scr% '  Selection.TypeText (MyText)
+echo>>%Scr% 'End Sub
+cscript //nologo %Scr%
+del %Scr%
+
+::xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+::copy/b *.txt  %date%_%Allm%%AMPM%_passdown.log 
+:: original script was created by Clemente Reyes
+
+FOR /f "tokens=*" %%a IN ('findstr /i /m "completed" "*.doc"') DO MOVE "%%a" "%CD%\complete\" >Nul
+:::::::::::::::::::::: CLSED
+FOR /f "tokens=*" %%a IN ('findstr /i /m "closed" "*.doc"') DO MOVE "%%a" "%CD%\closed\" >Nul
+:::::::::::::::::::::: NCR
+FOR /f "tokens=*" %%a IN ('findstr /m "test_pwa" "*.doc"') DO MOVE "%%a" "%CD%\test_pwa\" >Nul
+
+:::::::::::::::::::::: listing
+FOR /f "tokens=*" %%a IN ('findstr /i /m "\<Active Workorders\>" "*.rtf"') DO (
+	MOVE "%%a" "%CD%\reports\" >Nul
+)
+::::::::::::::::::::::
+FOR /f "tokens=*" %%a IN ('findstr /m "HOLD" "*.doc"') DO MOVE "%%a" "%CD%\Devtrack\" >Nul
+::::::::::::::::::::::
+FOR /f "tokens=*" %%a IN ('findstr /m "EOF" "*.doc*"') DO MOVE "%%a" "%CD%\superceded_logs\" >nul
+::::::::::::::::::::::
+cd %cd%\complete\
+call runit_word_nopause.bat
+
+goto end
+:completedlogfile
+md complete
+:ncrlogfile
+md ncr
+:closedlogfile
+md closed
+:devtracklogfile
+md devtrack
+:archivelogfile
+md archive_passdown
+:superceded_docs
+md superceded_logs
+@echo off
+echo.
+echo.
+echo.
+echo   log folders created successfully
+echo.
+echo.
+goto entry
+goto End
+:End
