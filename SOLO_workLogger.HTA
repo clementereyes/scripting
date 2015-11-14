@@ -1,0 +1,301 @@
+<!--
+                               ÉÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ»
+                               º        Disclaimer       º
+                               ÈÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¼
+   ÉÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ»
+   º                                                                                  º
+   º The authors of the script, cannot be held responsible for the use or misuse,     º
+   º directly or indirectly, of the content offered. The script offered is            º
+   º work-in-progress, and should be considered as such. There is no guarantee        º
+   º the script will work as expected, desired or even described.  Any document       º
+   º or sourcecode that links to this disclaimer, presenting it as such, is           º
+   º covered by these clauses.                                                        º
+   º THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE PROGRAM IS WITH YOU.    º
+   º SHOULD THE PROGRAM PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY         º
+   º SERVICING, REPAIR OR CORRECTION.                                                 º
+   ÈÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¼
+-------------------------------------------------------------
+Title:			workLogger
+Developer:		LazyWalker ( lazywalker@gmail.com )
+WebSite:		http://www.deepbird.com
+Last Update:	2008-03-19
+Summary:		A simple software for business records
+Printer Setup for IE: 
+	Header Title Center: Production Passdown-&w&d
+	Footer EID Left: Employee #: 10001488
+-------------------------------------------------------------
+::: -- Version History ?-
+:::(Major version).(Minor version).(Revision number).(Build number) 
+:::          XX.XXX         YYYYMMDD Author Description
+|  version=01.0.00-beta" &:20080319 lazywalker   initial version by author lazywalker, providing the framework
+|  version=01.0.1"       &:20141025 C.Reyes      Translated Comments in Korean to English for clarity: workLogger_revB.hta 
+|  version=01.0.2"       &:20141025 C.Reyes      changed extension from TXT to HTMl: workLogger_revC.hta
+|  version=01.0.3"       &:20141026 C.Reyes      changed Path from local to remote directory: workLogger_revD.hta
+|  version=01.0.4"       &:20141027 C.Reyes      Added version history: workLogger_revE.hta
+|  version=01.0.5"       &:20141028 C.Reyes      Added create folder syntax: workLogger_revF.hta
+|  version=01.0.6"       &:20141124 C.Reyes      Added Text Line divider per Entry: workLogger_revG.hta
+|  version=01.0.7"       &:20150204 C.Reyes      Added insert button syntax for textbox entry: workLogger_revK.hta
+|  version=01.1.0"       &:20150421 C.Reyes      Added Computername : workLogger_revR.hta
+|  version=01.1.1"       &:20150423 C.Reyes      Added comment version on the generated file : workLogger_revT.hta
+|  version=01.1.2"       &:20150715 C.Reyes      changed path of file generated  : workLogger_revW.hta
+|  version=01.1.3"       &:20150813 C.Reyes      syntax cleanup  : workLogger_revX.hta
+|  version=01.2.1"       &:20150820 C.Reyes      Added view current file generated  : workLogger_revAA.hta
+|  version=01.2.2"       &:20150820 C.Reyes      fixed minor bug during viewing the log  : workLogger_revAA.hta
+|  version=01.2.2"       &:20150820 C.Reyes      this version has been voided to reserve for future edit  : workLogger_revAB.hta
+|  version=01.3.0"       &:20150820 C.Reyes      fixed minor bug during viewing the log  : workLogger_revAC.hta
+|  version=01.3.2"       &:20150910 C.Reyes      Added syntax for Title page : workLogger_revAD.hta
+|  version=01.4.0"       &:20150914 C.Reyes      reverted to text extension for better entry : SOLO_workLogger_revAE
+|  version=01.4.1"       &:20150914 C.Reyes      added ver. title : SOLO_workLogger_revAE
+|  version=01.4.2"       &:20150914 C.Reyes      minor syntax fix : SOLO_workLogger_revAF
+|  version=01.4.3"       &:20150918 C.Reyes      Added Disclaimer : SOLO_workLogger_revAG
+|  version=01.4.4"       &:20151013 C.Reyes      added edit button for revisions : SOLO_workLogger_revAH
+-------------------------------------------------------------
+-->
+<head>
+<title>WorkLogger v1.4.4</title>
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+<hta:application
+	id = "wLogger"
+	applicationname = "WorkLogger"
+	version = "01.4.4"
+	scroll = "no"
+	singleInstance = "yes"
+	windowState = "normal"
+	border = "thin"
+	maximizeButton = "no"
+	minimizeButton = "no"
+	icon = "favicon.ico"
+/>
+<style type="text/css">
+	body {
+		background-color : #C0C0C0;
+		font-family : "Roll", "Arial";
+		font-size : 9pt;
+		margin : 5px;
+	}
+	p {
+		margin : 2px, 2px, 1px, 2px;
+		font-weight: bold;
+	}
+	form {
+		margin : 0;
+	}
+	#inputText {
+		width: 88%;
+		height: 140px;
+		font-size: 9pt;
+		border: 1;
+		border-style: solid;
+		ime-mode:active; /* Treatment to be able to write the Hangul by default */
+	}
+	#inputSubmit {
+		height: 140px;
+		font-size: 9pt;
+		border: 1;
+		border-style: solid;
+	}
+</style>
+<script type="text/javascript" language="javascript">
+
+//Setting global variables
+//VBScript code
+	var fso, objFolder
+	fso = new ActiveXObject("Scripting.FileSystemObject");
+
+	/* Global variables */
+	var cname = computername();
+
+	//http://www.ezineasp.net/post/Javascript-FSO-FolderExists-Method.aspx
+	// if condition to check whether the specified folder exists or not.   
+	if (fso.FolderExists("C:/logs")) {   
+        	var today = new Date();
+ 		document.write(today);   
+	    }   
+	    else {   
+		objFolder = fso.CreateFolder("C:/logs"); 
+		
+	    }   
+	
+	//Sets the path for the file to be saved 
+	var logDir = 'C:/logs'; //Directory where log files are stored
+	var d, logFileName='wLogger-'; //Save the file name?
+	var nowDate, nowTime;
+	// Log file name settings - using the current date. Form: wLogger-YYYY-MM-DD.log
+	d = new Date();
+
+	//The current date
+	nowDate = leadingZeros(d.getFullYear(), 4) + '-';
+	nowDate += leadingZeros(d.getMonth()+1, 2) + '-';
+	nowDate += leadingZeros(d.getDate(), 2);
+
+	//Log file name
+	logFileName += nowDate + '.txt';
+
+// Javascript code
+// Time delay - hta method for solving a phenomenon in which an error occurs during execution script
+// After he 0.3 seconds' delay starts a main function.
+function timeDelay(){
+	setTimeout('windowOnLoad()', 300)
+}
+
+/********************************************
+// Obtaining CPU INfo 
+********************************************/
+function computername()
+	//The initial window settings
+	{
+	var wshShell = new ActiveXObject("WScript.Shell");
+	var computername = wshShell.ExpandEnvironmentStrings("%COMPUTERNAME%");
+	return computername
+	}
+
+/********************************************
+// Display log generated INfo 
+********************************************/
+function view(){
+	    popupWin = window.open( 'file:///' + logDir + '/' + logFileName,'open_window','menubar="no", toolbar="no", location="no", directories="no", status, scrollbars="Yes", resizable,dependent, width=350, height=700, left=1040, top=0' )
+}
+/********************************************
+// EDIT log generated INfo 
+********************************************/
+     function edit(){
+        var wshShell = new ActiveXObject("shell.application");
+         wshShell.ShellExecute("notepad.exe", "/a " + logDir + '/' + logFileName, "", "open", 1);
+		
+    }
+/********************************************
+// Program execution time setting screen
+********************************************/
+function windowOnLoad(){
+
+	//The initial window settings
+	var width = 500;
+	//var height = 80; //When working with an initial set of input textbox
+	height = 275;
+
+	var s = window.screen;
+	var nowTime;
+
+	self.resizeTo(width,height);
+	self.moveTo(s.availWidth/2-width/2,s.availHeight/2-height/2);
+
+	document.getElementById("newTask").focus();
+
+	//Ensure that the log file will be created if the directories and files will be saved to.
+	if(!fso.FolderExists(logDir))	// If the directory
+		fso.createFolder(logDir);
+	addLogFile(logFileName, logDir);
+	
+	nowClock();
+
+}
+
+/********************************************
+// Generated log file
+********************************************/
+function addLogFile(file, dir){
+	var logFileName = dir + '/' + file;
+	if (!fso.FileExists(logFileName)) //If this file does not exist
+		fso.CreateTextFile(logFileName);
+}
+
+/********************************************
+// Record the log.
+********************************************/
+function logContent(){
+	var content = document.getElementById("newTask");
+	var addContents;
+	var ts;
+	var ForReading = 1, ForWriting = 2, ForAppending = 8;
+	var TristateUseDefault = -2, TristateTrue = -1, TristateFalse = 0;
+	var t = new Date();
+
+ 	//Current time
+	nowTime = leadingZeros(t.getHours(), 2) + ':';
+	nowTime += leadingZeros(t.getMinutes(), 2) + ':';
+	nowTime += leadingZeros(t.getSeconds(), 2);
+	addContents = '\n#################SWL-v1.4.4#########################'
+	addContents = addContents + '\n\n[ComputerName: ' + cname + ']' + '\n[' + nowDate + ' ' + nowTime + ']\n' + content.value
+
+	//Open the file and write the contents.
+	f = fso.GetFile(logDir + '/' + logFileName);
+	ts = f.OpenAsTextStream(ForAppending, TristateUseDefault);
+	ts.WriteLine(addContents);
+	ts.close();
+
+	//Close the window.
+	closeWindow();
+}
+
+/********************************************
+// A function for attaching zeros as you want specific numbers.
+// input	: leadingZeros(Number, number of digits)
+// output	: 0003 (Fitted with a zero in front of numbers by the number of places)
+********************************************/
+function leadingZeros(n, digits){
+	var zero = '';
+	n = n.toString();
+	if (n.length < digits){
+		for (i=0; i < digits-n.length; i++ ){
+			zero += '0';
+		}
+	}
+	return zero + n;
+}
+
+/********************************************
+// esc??If you press the key to exit the window.
+/********************************************/
+function exitWindow(){
+	if (event.keyCode == 27)
+		closeWindow();
+}
+
+/********************************************
+// End of program
+/********************************************/
+function closeWindow(){
+	self.window.close();
+}
+
+/********************************************
+// To show the current time. Shown in seconds
+/********************************************/
+function nowClock(){
+	var time = new Date();
+	nowTime = leadingZeros(time.getHours(), 2) + ':';
+	nowTime += leadingZeros(time.getMinutes(), 2) + ':';
+	nowTime += leadingZeros(time.getSeconds(), 2);
+	document.getElementById("nowTime").innerHTML = nowTime;
+	setTimeout("nowClock()",1000)
+}
+/********************************************
+// start of addons
+/********************************************/
+function insertLines(){
+       var inputText = document.getElementById("inputText");
+       inputText.value = inputText.value + "\nw/o: \np/n: \ns/n: \nComment:\n-\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
+}	   
+function inserttemplate(){
+       var inputText = document.getElementById("inputText");
+       inputText.value = inputText.value + "\nProblem/Solution:\n-\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
+}	   
+function insertBreak(){
+       var inputText = document.getElementById("inputText");
+       inputText.value = inputText.value + "\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n";
+}	   
+</script>
+</head>
+<body onLoad="timeDelay()">
+<form name="frm" onSubmit="logContent(); return false;">
+	<p>Log files are saved in the "C:\logs folder" unless otherwise stated. </p>
+	<p>Current Time : <span id="nowTime">hh:mm:dd</span> </p>
+	<textarea name="newTask" id="inputText" onKeyPress="exitWindow()"></textarea>
+	<input type="submit" id="inputSubmit" value="Enter" />
+<input type="button" onclick="javascript:insertLines()" value="Insert w/o:,p/n:,s/n:">
+<input type="button" onclick="javascript:inserttemplate()" value="Insert Problem/Solution:">
+<input type="button" onclick="javascript:insertBreak()" value="Insert Break/Return">
+<input type="button" onclick="javascript:view()" value="View log">
+<input type="button" onclick="javascript:edit()" value="Edit log">
+</form>
+</body>
