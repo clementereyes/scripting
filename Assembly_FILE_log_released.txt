@@ -25,6 +25,7 @@ SET "version=05.2.1"       &:20140610 C.Reyes   Added Manual Timestamp entry: As
 SET "version=05.3.0"       &:20140813 C.Reyes   Added Uppercase format: Assembly_FILE_log_revP.bat
 SET "version=05.3.1"       &:20141003 C.Reyes   Added Keywords properties: Assembly_FILE_log_revR.bat
 SET "version=05.3.2"       &:20150715 C.Reyes   Added Keywords properties: Assembly_FILE_log_revT.bat
+SET "version=05.4.0"       &:20160705 C.Reyes   Syntax clean-up: Assembly_FILE_log_revW.bat
 SET "title=%~nx0 - version %version%"
 title %title%
 SET SUBDIR=%~dp0
@@ -73,17 +74,17 @@ set /p wo=Enter Work Order:
 (if "%wo%"=="" set wo=NA)
 set /p op=Enter Operation:
 (if "%op%"=="" set op=NA)
-set /p gapn=Enter  p/n:
+set /p gapn=Enter GA-ASI p/n:
 (if "%gapn%"=="" set gapn=NA)
 set /p rev=Enter Revision:
 (if "%rev%"=="" set rev=NA)
-set /p gasn=Enter Serial No.:
+set /p gasn=Enter GA-ASI Serial No.:
 (if "%gasn%"=="" set gasn=NA)
 set /p ptp=Enter ptp No.:
 (if "%ptp%"=="" set ptp=NA)
 set /p par=Enter paragraph No.:
 (if "%par%"=="" set par=NA)
-set /p ncr=RMA No.:
+set /p ncr=NCR No.:
 (if "%ncr%"=="" set ncr=)
 set /p sta=Enter Station number:
 (if "%sta%"=="" set sta=NA)
@@ -107,6 +108,7 @@ set /p line2=Continue comment:
 :tex
 set Scr="%temp%\TempVBS.vbs"
 if exist %Scr% del %Scr%
+echo>>%Scr% Option Explicit
 echo>>%Scr% ' ^|Name: word_generator_5_revH.vbs
 echo>>%Scr% ' ^|--------------------------------------------------------------------------
 echo>>%Scr% ' ^|Script generates Word Document with set parameters for the USER.
@@ -135,10 +137,12 @@ echo>>%Scr% ' ^|Version: 1.6.3 - Modified original code back to ver. 1.6 : word_
 echo>>%Scr% ' ^|Version: 1.6.3 - retained Doc Properties from ver. 1.6.2 : word_generator_5_revK.vbs
 echo>>%Scr% ' ^|Version: 1.7.0 - Added Uppercase format : word_generator_5_revP.vbs
 echo>>%Scr% ' ^|Version: 1.7.1 - Added Keyword properties : word_generator_5_revR.vbs
+echo>>%Scr% ' ^|Version: 1.8.0 - Syntax cleanup : word_generator_5_revW.vbs
 echo>>%Scr% ' ^|--------------------------------------------------------------------------
 echo>>%Scr% ' ^|Author: Clemente Reyes
 echo>>%Scr% ' ^|--------------------------------------------------------------------------
 echo>>%Scr% ' create word object
+echo>>%Scr% Dim obj, objWord, objDoc, oBuiltInProps, wdColorBlue, objSelection
 echo>>%Scr% set obj = CreateObject("Scriptlet.TypeLib")  
 echo>>%Scr% Set objWord = CreateObject("Word.Application")
 echo>>%Scr%  objWord.Visible = True
@@ -146,112 +150,134 @@ echo>>%Scr%  ' add a document
 echo>>%Scr% Set objDoc = objWord.Documents.Add()
 echo>>%Scr% set oBuiltInProps = objDoc.BuiltInDocumentProperties
 echo>>%Scr% 'Headers
-echo>>%Scr% objDoc.Sections(1).Headers(1).Range.font.Size = 18
-echo>>%Scr% objDoc.Sections(1).Headers(1).Range.font.Bold = False
-echo>>%Scr% objDoc.Sections(1).Headers(1).Range.font.Italic = False
-echo>>%Scr% 'objDoc.Sections(1).Headers(1).Range.font.Color = wdColorBlue
-echo>>%Scr% objDoc.Sections(1).Headers(1).Range.Text = "w/o: " ^& Ucase("%wo%")
-echo>>%Scr% objDoc.Sections(1).Headers(1).Range.ParagraphFormat.Alignment = 1
+echo>>%Scr%   with objDoc.Sections(1).Headers(1).Range
+echo>>%Scr%     .font.Size = 18
+echo>>%Scr%     .font.Bold = False
+echo>>%Scr%     .font.Italic = False
+echo>>%Scr%     '.font.Color = 2
+echo>>%Scr%     .Text = "w/o: " ^& Ucase("%wo%")
+echo>>%Scr%     .ParagraphFormat.Alignment = 1
+echo>>%Scr%   end with
 echo>>%Scr% 'footers
-echo>>%Scr% objDoc.Sections(1).Footers(1).Range.Font.Size = 5
-echo>>%Scr% objDoc.Sections(1).Footers(1).Range.Font.Bold = False
-echo>>%Scr% objDoc.Sections(1).Footers(1).Range.Font.Italic = False
-echo>>%Scr% objDoc.Sections(1).Footers(1).Range.Font.Color = wdColorBlue
-echo>>%Scr% objDoc.Sections(1).Footers(1).Range.Text = "" ^& vbTab ^& Ucase("%lvl%Assembly_%wo%_%gapn%_%gasn%_%ncr%_%date%_%Allm%%AMPM%") ^& vbTab ^& ""
-echo>>%Scr% 'objDoc.Sections(1).Footers(1).Range.Text = Ucase("%title%")
-echo>>%Scr% objDoc.Sections(1).Footers(1).Range.ParagraphFormat.Alignment = 1
+echo>>%Scr%   with objDoc.Sections(1).Footers(1).Range
+echo>>%Scr%     .Font.Size = 5
+echo>>%Scr%     .Font.Bold = False
+echo>>%Scr%     .Font.Italic = False
+echo>>%Scr%     .Font.Color = 2
+echo>>%Scr%     .Text = "" ^& vbTab ^& Ucase("%lvl%Assembly_%wo%_%gapn%_%gasn%_%ncr%_%date%_%Allm%%AMPM%") _
+echo>>%Scr%     ^& vbTab ^& ""
+echo>>%Scr%     '.Text = Ucase("%title%")
+echo>>%Scr%     .ParagraphFormat.Alignment = 1
+echo>>%Scr%   end with
 echo>>%Scr%   'Const wdOrientLandscape = 1
-echo>>%Scr%  Const wdOrientPortrait = 0
-echo>>%Scr% With objWord.ActiveDocument.PageSetup
-echo>>%Scr% '.Orientation = wdOrientLandscape
-echo>>%Scr% .TopMargin = objWord.InchesToPoints(0.5)
-echo>>%Scr% .BottomMargin = objWord.InchesToPoints(0.5)
-echo>>%Scr% .LeftMargin = objWord.InchesToPoints(0.2)
-echo>>%Scr% .RightMargin = objWord.InchesToPoints(0.2)
-echo>>%Scr% .PageWidth = objWord.InchesToPoints(8.5)
-echo>>%Scr% .PageHeight = objWord.InchesToPoints(11)
-echo>>%Scr% End With
+echo>>%Scr% Const wdOrientPortrait = 0
+echo>>%Scr%   With objWord.ActiveDocument.PageSetup
+echo>>%Scr%     '.Orientation = wdOrientLandscape
+echo>>%Scr%     .TopMargin = objWord.InchesToPoints(0.5)
+echo>>%Scr%     .BottomMargin = objWord.InchesToPoints(0.5)
+echo>>%Scr%     .LeftMargin = objWord.InchesToPoints(0.2)
+echo>>%Scr%     .RightMargin = objWord.InchesToPoints(0.2)
+echo>>%Scr%     .PageWidth = objWord.InchesToPoints(8.5)
+echo>>%Scr%     .PageHeight = objWord.InchesToPoints(11)
+echo>>%Scr%   End With
 echo>>%Scr% ' obtain selection handler
+echo>>%Scr% ' Sets the CPU format
 echo>>%Scr% Set objSelection = objWord.Selection
-echo>>%Scr%  objSelection.Paragraphs.SpaceAfter = 0
+echo>>%Scr%   With objSelection
+echo>>%Scr%       .Paragraphs.SpaceAfter = 0
 echo>>%Scr% ' set the font and add a text paragraph 0 
-echo>>%Scr% objSelection.ParagraphFormat.Alignment = 2 
+echo>>%Scr%       .ParagraphFormat.Alignment = 2 
 echo>>%Scr% '0 - Aligns text to Left, 1- Aligns text to center
 echo>>%Scr% '2 - Aligns text to Right, 3 - Justify the text
-echo>>%Scr% objSelection.Font.Size = "10"
-echo>>%Scr% objSelection.TypeText "" ^& (FormatDateTime(Now(),vbLongDate)) ^& " - " ^& FormatDateTime(now, 4)
-echo>>%Scr% objSelection.TypeParagraph()
+echo>>%Scr%       .Font.Size = "10"
+echo>>%Scr%       .TypeText "" ^& (FormatDateTime(Now(),vbLongDate)) ^& " - " _
+echo>>%Scr%       ^& FormatDateTime(now, 4)
+echo>>%Scr%       .TypeParagraph()
 echo>>%Scr% ' set the font and add a text paragraph 4
-echo>>%Scr% objSelection.ParagraphFormat.Alignment = 0 
+echo>>%Scr%       .ParagraphFormat.Alignment = 0 
 echo>>%Scr% '0 - Aligns text to Left, 1- Aligns text to center
 echo>>%Scr% '2 - Aligns text to Right, 3 - Justify the text
-echo>>%Scr% objSelection.Font.Color = Black 
+echo>>%Scr%       .Font.Color = 1
 echo>>%Scr% 'objSelection.Font.Underline = true 
-echo>>%Scr% objSelection.Font.Bold = True
-echo>>%Scr% objSelection.Font.Name = "Times New Roman"
-echo>>%Scr% objSelection.Font.Size = "10"
-echo>>%Scr% objSelection.TypeText "Name: %Username%" ^& vbcrlf
-echo>>%Scr% objSelection.TypeText "  Test Station #: " ^& Ucase("%sta%") ^& vbcrlf  'paragraph 8 
-echo>>%Scr% objSelection.TypeText "  Computer Name: %computername%" ^& vbcrlf 
-echo>>%Scr% objSelection.TypeText "Path: %CD%" ^& vbcrlf
-echo>>%Scr% objSelection.TypeText "Telephone: %tel%" ^& vbcrlf
-echo>>%Scr% objSelection.TypeParagraph()
+echo>>%Scr%       .Font.Bold = True
+echo>>%Scr%       .Font.Name = "Times New Roman"
+echo>>%Scr%       .Font.Size = "10"
+echo>>%Scr%       .TypeText "Name: %Username%" ^& vbcrlf
+echo>>%Scr%       .TypeText "  Test Station #: " ^& Ucase("%sta%") ^& vbcrlf  'paragraph 8 
+echo>>%Scr%       .TypeText "  Computer Name: %computername%" ^& vbcrlf 
+echo>>%Scr%       .TypeText "Path: %CD%" ^& vbcrlf
+echo>>%Scr%       .TypeText "Telephone: %tel%" ^& vbcrlf
+echo>>%Scr%       .TypeParagraph()
+echo>>%Scr%   End with
 echo>>%Scr% 'Main body
+echo>>%Scr%   With objSelection
 echo>>%Scr% ' set the font and add a text paragraph 9
-echo>>%Scr% objSelection.ParagraphFormat.Alignment = 0 
+echo>>%Scr%     .ParagraphFormat.Alignment = 0 
 echo>>%Scr% '0 - Aligns text to Left, 1- Aligns text to center
 echo>>%Scr% '2 - Aligns text to Right, 3 - Justify the text
-echo>>%Scr% objSelection.Font.Color = Black 
+echo>>%Scr%     .Font.Color = 1 
 echo>>%Scr% 'objSelection.Font.Underline = true 
-echo>>%Scr% objSelection.Font.Bold = True
-echo>>%Scr% objSelection.Font.Name = "Times New Roman"
-echo>>%Scr% objSelection.Font.Size = "10"
-echo>>%Scr% objSelection.TypeText "w/o: " ^& Ucase("%wo%") ^& vbcrlf
-echo>>%Scr% objSelection.TypeText "Operation:  %op%" ^& vbcrlf 
-echo>>%Scr% objSelection.TypeText "p/n: " ^& Ucase("%gapn%") ^& vbcrlf 
-echo>>%Scr% objSelection.TypeText "Revision: " ^& Ucase("%rev%") ^& vbcrlf 
-echo>>%Scr% objSelection.TypeText " Serial #: " ^& Ucase("%gasn%") ^& vbcrlf 
-echo>>%Scr% objSelection.TypeText "-PTP #: %ptp%" ^& vbcrlf 
-echo>>%Scr% objSelection.TypeText "-Par. #: %par%" ^& vbcrlf '^&Chr(11)'paragraph 7
-::echo>>%Scr% objSelection.TypeText "Comments:" ^& vbcrlf 
-echo>>%Scr% objSelection.TypeText "-Description of the PASS/failure [e.g.:  HI/Lo, should be, Measured value, etc...]" ^& vbcrlf
-echo>>%Scr% objSelection.TypeText "RMA #: " ^& Ucase("%ncr%") 
-echo>>%Scr% objSelection.TypeParagraph()
+echo>>%Scr%     .Font.Bold = True
+echo>>%Scr%     .Font.Name = "Times New Roman"
+echo>>%Scr%     .Font.Size = "10"
+echo>>%Scr%     .TypeText "w/o: " ^& Ucase("%wo%") ^& vbcrlf
+echo>>%Scr%     .TypeText "Operation:  %op%" ^& vbcrlf 
+echo>>%Scr%     .TypeText "GA-ASI p/n: " ^& Ucase("%gapn%") ^& vbcrlf 
+echo>>%Scr%     .TypeText "Revision: " ^& Ucase("%rev%") ^& vbcrlf 
+echo>>%Scr%     .TypeText "GA-ASI Serial #: " ^& Ucase("%gasn%") ^& vbcrlf 
+echo>>%Scr%     .TypeText "-PTP #: %ptp%" ^& vbcrlf 
+echo>>%Scr%     .TypeText "-Par. #: %par%" ^& vbcrlf '^&Chr(11)'paragraph 7
+::echo>>%Scr%     .TypeText "Comments:" ^& vbcrlf 
+echo>>%Scr%     .TypeText "-Description of the PASS/failure [e.g.:  HI/Lo, should be, Measured value, etc...]" ^& vbcrlf
+echo>>%Scr%     .TypeText "-NCR/SQUAWK #: " ^& Ucase("%ncr%") 
+echo>>%Scr%     .TypeParagraph()
+echo>>%Scr%   End with
+echo>>%Scr% ' Sets the input comments section
+echo>>%Scr%   With objSelection
 echo>>%Scr% ' set the font and add a text paragraph 9
-echo>>%Scr% objSelection.ParagraphFormat.Alignment = 0 
+echo>>%Scr%     .ParagraphFormat.Alignment = 0 
 echo>>%Scr% '0 - Aligns text to Left, 1- Aligns text to center
 echo>>%Scr% '2 - Aligns text to Right, 3 - Justify the text
-echo>>%Scr% objSelection.Font.Bold = False
-echo>>%Scr% objSelection.Font.Name = "Times New Roman"
-echo>>%Scr% objSelection.Font.Size = "12"
-echo>>%Scr% objSelection.Font.Color = black
-echo>>%Scr% objSelection.TypeText "        %passdown%" 
-echo>>%Scr% objSelection.TypeParagraph()
-echo>>%Scr% objSelection.Paragraphs.SpaceBefore = 0
+echo>>%Scr%     .Font.Bold = False
+echo>>%Scr%     .Font.Name = "Times New Roman"
+echo>>%Scr%     .Font.Size = "12"
+echo>>%Scr%     .Font.Color = 1
+echo>>%Scr%     .TypeText  space (9) ^& "%passdown%" 
+echo>>%Scr%     .TypeParagraph()
+echo>>%Scr%     .Paragraphs.SpaceBefore = 0
+echo>>%Scr%   End with  
 echo>>%Scr% 'Set Built-in Document Properties collection.
+echo>>%Scr%   With oBuiltInProps
 echo>>%Scr%         'oBuiltInProps = objDoc.BuiltInDocumentProperties
 echo>>%Scr%         'Get the value of the Author property and display it
-echo>>%Scr%         oBuiltInProps.Item("Author").Value = "%Username%"
+echo>>%Scr%         .Item("Author").Value = "%Username%"
 echo>>%Scr% 'Set the value of the Subject property.
-echo>>%Scr%         oBuiltInProps.Item("Subject").Value = _
+echo>>%Scr%         .Item("Subject").Value = _
 echo>>%Scr%                   "w/o: " ^& Ucase("%wo%") ^& " p/n: " ^& Ucase("%gapn%") ^& " s/n: " ^& Ucase("%gasn%")
 echo>>%Scr%  'Set the value of the Title property.
-echo>>%Scr%         oBuiltInProps.Item("Title").Value = _
+echo>>%Scr%         .Item("Title").Value = _
 echo>>%Scr%                   "Production Passdown"
 echo>>%Scr% 'Set the value of the Comments property.
-echo>>%Scr%         oBuiltInProps.Item("Comments").Value = _
+echo>>%Scr%         .Item("Comments").Value = _
 echo>>%Scr%                   Ucase("%lvl%Assembly_%wo%_%gapn%_%gasn%_%ncr%_%date%_%Allm%%AMPM%") ^& vbcrLF ^& "File generated by: " ^& vbcrlf ^& "   %title%" ^& vbCRLF ^&_
 echo>>%Scr%                   "Serial Number: " ^& obj.GUID
 echo>>%Scr% 'Set the value of the Keyword property.
-echo>>%Scr%         oBuiltInProps.Item("Keywords").Value = _
+echo>>%Scr%         .Item("Keywords").Value = _
 echo>>%Scr%                   "w/o: " ^& Ucase("%wo%") ^& " p/n: " ^& Ucase("%gapn%") ^& " s/n: " ^& Ucase("%gasn%")
+echo>>%Scr%   End With
 echo>>%Scr% ' bring to front
 echo>>%Scr% objWord.Application.Activate
-echo>>%Scr% objWord.Application.WindowState = wdWindowStateMaximize
+echo>>%Scr% objWord.Application.WindowState = 1
 echo>>%Scr% CreateObject("WScript.Shell").AppActivate objDoc.Name
 echo>>%Scr% 'you can change the path wher the file is saved ("U:\filepath\folder\bla..bla..bla")
 echo>>%Scr% objDoc.SaveAs(Ucase("c:\logfile\%lvl%Assembly_%wo%_%gapn%_%gasn%_%ncr%_%date%_%Allm%%AMPM%.doc"))
-echo>>%Scr% 'call msgbox("                                                       Your File has been Generated!!^^!" ^& vbcrlf ^& "Your file is located at:" ^& vbcrlf ^& "%userprofile%\My Documents\%lvl%Assembly_%wo%_%gapn%_%gasn%_%ncr%_%date%_%Allm%%AMPM%.doc ")
+echo>>%Scr% 'call msgbox(Space (55) ^& "Your File has been Generated!!^^!" ^& vbcrlf ^& "Your file is located at:" ^& vbcrlf ^& "%userprofile%\My Documents\%lvl%Assembly_%wo%_%gapn%_%gasn%_%ncr%_%date%_%Allm%%AMPM%.doc ")
+echo>>%Scr% EXIThere:
+echo>>%Scr%   Set obj = Nothing
+echo>>%Scr%   Set objWord = Nothing
+echo>>%Scr%   Set objDoc = Nothing
+echo>>%Scr%   Set oBuiltInProps = Nothing
+echo>>%Scr%   Set objSelection = Nothing
 echo>>%Scr% ' ^|Name: log3.vbs
 echo>>%Scr% ' ^|--------------------------------------------------------------------------
 echo>>%Scr% ' ^|Adding a macro to MS WOrd Document
