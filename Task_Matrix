@@ -1,0 +1,109 @@
+<!--
+-------------------------------------------------------------
+Title:			Task Matrix "Ike Method"
+Developer:		Clemente Reyes
+Last Update:	2015-05-06
+Summary:		A simple Visual Task list 
+-------------------------------------------------------------
+::: -- Version History –-
+:::(Major version).(Minor version).(Revision number).(Build number) 
+:::          XX.XXX         YYYYMMDD Author Description
+|  version=01.0.00-beta" &:2011  Alan Bond       initial version by author Alan Bond, providing the framework(HelpDesk Service Request.hta): http://www.visualbasicscript.com/PostIt-notes-using-HTAs-m94618.aspx
+|  version=01.0.1"       &:20150506 C.Reyes      Framework outline: post-it_Board.hta
+|  version=01.0.2"       &:20180312 C.Reyes      Version History: Task_matrix_revE.hta 
+|  version=01.0.3"       &:20181006 C.Reyes      personal build: Task_matrix_revF.hta 
+-------------------------------------------------------------
+-->
+<HTML id=HTMLSaveAll XMLNS:HTA><HEAD><TITLE>Task Matrix rev F</TITLE>
+<SCRIPT language=VBScript> 
+On Error Resume Next                 'continue on if error 
+Self.MoveTo -1000,-1000              'move off screen 
+If Err.Number <>0 Then Window.Close  'if access denied error close window 
+On Error Goto 0                      'reset to normal error handling 
+</SCRIPT>
+<HTA:APPLICATION id=Dashboard APPLICATIONNAME="Dashboard Matrix" version="1.0.3" BORDER="thin" CONTEXTMENU="yes" ICON="Explorer.exe" MAXIMIZEBUTTON="no" MINIMIZEBUTTON="yes" RESIZE="no" SCROLL="no" SINGLEINSTANCE="yes" WINDOWSTATE="normal" SHOWINTASKBAR="Yes"></HTA:APPLICATION></HEAD>
+<BODY id=objBody style="BORDER-TOP: 0px; BORDER-RIGHT: 0px; BORDER-BOTTOM: 0px; BORDER-LEFT: 0px; MARGIN: 0px" SaveX="-8" SaveY="-31" SaveW="530" SaveH="530" Viewed="6/8/2018 1:34:25 PM" Count="496">
+<DIV id=txaPad title="Last viewed: 5/25/2018 5:38:38 AM&#13;&#10;View count: 494" contentEditable=true style="FONT-SIZE: 12px; HEIGHT: 100%; FONT-FAMILY: Arial; WIDTH: 100%; OVERFLOW-Y: auto; SCROLLBAR-BASE-COLOR: #c0c050; BACKGROUND-COLOR: #ffff66">
+<TABLE style="HEIGHT: 528px; WIDTH: 530px" borderColor=black height=528 cellSpacing=1 cols=2 cellPadding=0 width=530 border=1>
+<TBODY>
+<TR>
+<TH height="5%" width="50%">Important/ Urgent (1)</TH>
+<TH height="5%" width="50%" noWrap align=center>Not Urgent/ Important (2)</TH></TR>
+<TR>
+<TD style="VERTICAL-ALIGN: top" bgColor=#fa8072 height="40%" width="60%">
+<P>$$$$$$$$$$$$$$$$$$$</P>
+<P>-1. servos..<BR>-2. generate NCR... <BR>-3. folllow-up Flaps issue PTD-3740<BR>-4. Turn-in RAck (SmtSvo); C * 3/12<BR>-5.&nbsp;48hr post burn-in; C * 3/12<BR>-6. Email- check</P>
+<P>~~~~~~~~~~~~~~~~~~~~~~~~~<BR>Note: demand is 5min (hot)</P></TD>
+<TD style="VERTICAL-ALIGN: top" bgColor=#add8e6 height="40%" width="60%">
+<P>&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&nbsp;</P>
+<P>-1. Actuator: Backlash test<BR>-2. PTR:&nbsp;Post Burn-in...<BR>-3. Update time card; C * 3/12<BR>-4. Depot Hot list</P>
+<P><BR>~~~~~~~~~~~~~~~~~~~~~~<BR>Note: demand is 15min (hot)</P></TD></TR>
+<TR>
+<TH height="5%" width="50%" noWrap>Not Important/ Urgent (3)</TH>
+<TH height="5%" width="50%" noWrap>Not Urgent/ Not Important (4)</TH></TR>
+<TR>
+<TD style="VERTICAL-ALIGN: top" bgColor=orange height="40%" width="30%">
+<P>###################<BR><BR>-1. smart servos: Backlash test<BR>-2. Machine Chamber Usage</P>
+<P>&nbsp;</P>
+<P>~~~~~~~~~~~~~~~~~~~~~~~~~<BR>Note: demand is 20min (hot)</P></TD>
+<TD style="VERTICAL-ALIGN: top" bgColor=#90ee90 height="40%" width="30%">%%%%%%%%%%%%%<BR>
+<P>-1. smart servos: FIFO<BR>-2. MCM: FiFO...<BR>-3.&nbsp;add to shop notes to W/O<BR>-4. Update <A href="\\asgstore01\\manufacturing$\\Avionics-Manufact\\Daily Production Status\\Critical Parts Status.xlsx">Critical Parts list</A>;&nbsp;C * 3/12<BR></P>
+<P>~~~~~~~~~~~~~~~~~~~~~~~~~<BR>Note: demand is 1hr (hot)</P></TD></TR></TBODY></TABLE></DIV>
+<SCRIPT language=VBScript> 
+ 
+'***************** 
+'-- HTA Post-It -- 
+'By Alan Bond 2011 
+'http://www.visualbasicscript.com/PostIt-notes-using-HTAs-m94618.aspx
+'***************** 
+ 
+'To take full advantage of this HTA so you can right click and "New post-it" anywhere in windows XP:- 
+'(Requires TweakUI) 
+ 
+'1. In Explorer goto Tools\Folder-Options\File Types and add a new one called PSI (or whatever you like) 
+'2. Goto Advanced and add a new action "Open" with application:- C:\WINDOWS\System32\mshta.exe "%1" 
+'3. Give it a description (used in New menu) and a nice icon (something yellow) 
+'4. Rename this HTA to "whatever.PSI" (remove any post-it text, and these comments) 
+'5. In TweakUI goto Templates and add the above PSI file (You can now delete whatever.PSI) 
+ 
+Option Explicit 
+ 
+Dim strPath 'Filename of this HTA 
+Dim intOffX,intOffY 'Size of window border and title 
+ 
+'---- Restore last size\position 
+With objBody 
+ '---- If last session was out of screen then re-position 
+ If Int(.SaveX)<0 Then .SaveX=0 
+ If Int(.SaveY)<0 Then .SaveY=0 
+ If Int(.SaveX)+Int(.SaveW)>Screen.Width Then .SaveX=Screen.Width-.SaveW 
+ If Int(.SaveY)+Int(.SaveH)>Screen.Height Then .SaveY=Screen.Height-.SaveW 
+ 
+ Self.MoveTo 9999,0 : Self.ResizeTo .SaveW,.SaveH 'Limits flicker a bit 
+ Self.ResizeTo .SaveW+(.SaveW-.OffsetWidth),.SaveH+(.SaveH-.OffsetHeight) 'True innersize 
+ Self.MoveTo 0,0 : intOffX=Window.ScreenLeft : intOffY=Window.ScreenTop 'Get title\border size 
+ Self.MoveTo .SaveX,.SaveY : txaPad.Title="Last viewed: " & .Viewed & VBCRLF & "View count: " & .Count 
+End With 
+ 
+'---- The title is the single filename with no extension 
+strPath = Replace(Document.Location.Pathname,"/","\") : strPath = Replace(strPath,"%20"," ") 
+Document.Title=Right(strPath,Len(strPath)-InstrRev(strPath,"\")) 'Filename 
+Document.Title=Left(Document.Title,Len(Document.Title)-4) 'Extension 
+txaPad.Focus 
+ 
+'---- Exit on blur 
+Sub txaPad_OnBlur() 
+ '---- Store position,size and info in body 
+ With objBody 
+ .SaveX=Window.ScreenLeft-intOffX : .SaveY=Window.ScreenTop-intOffY : .Count=.Count+1  
+ .SaveW=Document.Body.offsetwidth : .SaveH=Document.Body.OffsetHeight : .Viewed=Now 
+ End With 
+ '---- Save & exit 
+ Dim objFile : On Error Resume Next 'For Read-only files etc. 
+ Set objFile = CreateObject("Scripting.FileSystemObject").CreateTextFile(strPath, True) 
+ objFile.Write HTMLSaveAll.OuterHTML : objFile.Close :  
+ 'Window.Close 
+End Sub 
+ 
+</SCRIPT>
+</BODY></HTML>
