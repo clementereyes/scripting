@@ -1,0 +1,270 @@
+<!--
+-------------------------------------------------------------
+Title:			Trouble Ticket Task Tracker (MS outlook)
+Developer:		Clemente Reyes
+Last Update:	2018-09-19
+Summary:		A simple Devtrack Generator for Production records
+-------------------------------------------------------------
+::: -- Version History –-
+:::(Major version).(Minor version).(Revision number).(Build number) 
+:::          XX.XXX         YYYYMMDD Author Description
+|  version=01.0.00-beta" &:20100915 Assaf Miron	 initial version by author Assaf Miron , providing the framework(HelpDesk Service Request.hta): http://sites.google.com/site/assafmiron
+|  version=01.0.1"       &:20160816 C.Reyes      personal build: GTD_OLK_POST_revB.HTA 
+|  version=01.0.2"       &:20160816 C.Reyes      Added script identification: GTD_OLK_POST_revC.HTA
+|  version=01.0.3"       &:20160816 C.Reyes      Added subject and date header: GTD_OLK_POST_revD.HTA
+|  version=01.0.4"       &:20160816 C.Reyes      Asthetic changes to GUI: GTD_OLK_POST_revE.HTA
+|  version=01.0.5"       &:20160816 C.Reyes      added reminder set: GTD_OLK_POST_revF.HTA
+|  version=01.0.6"       &:20160816 C.Reyes      Added forward mail: GTD_OLK_POST_revG.HTA
+|  version=01.0.7"       &:20160816 C.Reyes      remmoved forward and reminder sets: GTD_OLK_POST_revH.HTA
+|  version=01.0.8"       &:20160816 C.Reyes      Added version history (unofficial): GTD_OLK_POST_revJ.HTA
+|  version=01.0.9"       &:20160816 C.Reyes      removed user PII for security: GTD_OLK_POST_revK.HTA
+|  version=01.0.9"       &:20171115 C.Reyes      Added prority and Category : GTD_OLK_POST_revM.HTA
+|  version=01.3.0"       &:20171115 C.Reyes      Added Insert template : GTD_OLK_POST_revP.HTA
+|  version=01.3.9"       &:20171116 C.Reyes      Added more insert template : GTD_OLK_POST_revR.HTA
+|  version=01.4.2"       &:20180324 C.Reyes      modded div to textbox : GTD_OLK_POST_revT.HTA
+|  version=01.4.5"       &:20180324 C.Reyes      modded div to textbox : GTD_OLK_POST_revW.HTA
+|  version=01.4.6"       &:20180324 C.Reyes      modded div to textbox : GTD_OLK_POST_revX.HTA
+|  version=01.4.7"       &:20180324 C.Reyes      modded div to textbox : GTD_OLK_POST_revZ.HTA
+|  version=01.4.8"       &:20180324 C.Reyes      modded div to textbox : GTD_OLK_POST_revAA.HTA
+|  version=02.0.0"       &:20180919 C.Reyes      Javascript to VBS syntax conversion: DEVTRACk_revD.hta.HTA
+-------------------------------------------------------------
+-->
+<html>
+<head>
+<title>Devtrack OUTLOOK - GTD; v2.0.0</title>
+ <HTA:APPLICATION ID="TASK GTD"
+     APPLICATIONNAME="TASK GTD v2.0.0"
+	 VERSION="2.0.0"
+     BORDER= "thin"
+     CAPTION= "yes"
+     CONTEXTMENU= "yes"
+     ICON= ""
+     INNERBORDER= "no"
+     MAXIMIZEBUTTON= "no"
+     MINIMIZEBUTTON= "yes"
+     NAVIGABLE= "yes"
+     SCROLL= "no"
+     SELECTION= "yes"
+     SHOWINTASKBAR= "yes"
+     SINGLEINSTANCE= "yes"
+     SYSMENU= "yes"
+     WINDOWSTATE= "normal"
+	 />
+</head>
+<style>
+     body, div, button {
+     	font-family: Lucida Sans Unicode, Lucida, Lucida Sans;
+     	letter-spacing: -1px;
+     }
+     body, .subject {
+     	font-size: 12pt;
+     	letter-spacing: -1px;
+     	<!--background-color: #18335e;-->
+		background-color: white;
+     	color: #00FF00;
+     }
+     .subject {
+     	font-size: 8pt;
+     	font-family: Lucida Sans Unicode, Lucida, Lucida Sans;
+     	font-weight: bold;
+     }
+     button {
+     	border: solid 2px #CCCCCC;
+     	background-color: #CC0000;
+     	color:white;
+     	margin-left: 4px;
+     	font-size: 10pt;
+     	padding: -1px;
+     }
+	#inputText {
+		width: 667px;
+		height: 100px;
+		font-size: 9pt;
+		border: 1;
+		border-style: solid;
+		ime-mode:active; /* Treatment to be able to write the Hangul by default */
+	}
+	#inputTextbody {
+		width: 667px;
+		height: 350px;
+		font-size: 9pt;
+		border: 1;
+		border-style: solid;
+		ime-mode:active; /* Treatment to be able to write the Hangul by default */
+	}
+</style>
+<script language="JavaScript">
+/********************************************
+// start of addons
+/********************************************/
+function setup(){
+	window.resizeTo(700,750);
+	var d = new Date();
+	var datestring = ("0"+(d.getMonth()+1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2) + "-" + d.getFullYear() + " " + ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2);
+	
+	document.forms.noteform.subject.focus();
+	document.forms.noteform.subject1.focus();
+	document.forms.noteform.subject.select();
+	document.forms.noteform.subject1.select();
+	//document.forms.noteform.subject2.select();
+	//document.forms.noteform.subject3.select();
+	//document.forms.noteform.subject4.select();
+    document.forms.noteform.dt.value=datestring;
+}
+function check_length(noteform){
+maxLen = 100; // max number of characters allowed
+if (noteform.note.value.length >= maxLen) {
+// Alert message if maximum limit is reached. 
+// If required Alert can be removed. 
+var msg = "You have reached your maximum limit of characters allowed";
+alert(msg);
+// Reached the Maximum length so trim the textarea
+	noteform.note.value = noteform.note.value.substring(0, maxLen);
+ }
+else{ // Maximum length not reached so update the value of my_text counter
+	noteform.text_num.value = maxLen - noteform.note.value.length;
+}
+}
+</script>
+<script language="VBScript">
+Option Explicit
+On Error Resume Next
+'----------------------------
+' Global Size
+   Const WIDTH  = 700
+   Const HEIGHT = 750
+   Const Seed=2010
+Sub Window_OnLoad
+   'This method will be called when the application loads
+  ResizeWindow Width,Height ' Resizes the Window with the Primary Width and Height
+  'subject1.Focus
+End Sub
+
+Sub ResizeWindow(Width,Height)
+' This Method will Resize the HTA Window and Center it on the Screen
+' Input: Width, Height
+ Self.ResizeTo WIDTH,HEIGHT ' Resize
+   Self.MoveTo (screen.AvailWidth-Width)/2,(screen.AvailHeight-Height)/2 ' Move Window to Center
+End Sub
+
+Sub OnClickButtonExit()
+'This method will be called when Exit Button is clicked
+  window.Close ' Close the HTA
+End Sub
+
+Sub sSendMail()
+ const olTaskItem = 3
+ Dim objFSO, objOutlook, objMail
+ DIM strMsg,wo,op,pn,sn,ptp,ptd,summary,strbody, strMsg2
+ ' Create The File System Object - To check if the File Exsists
+ Set objFSO = CreateObject("Scripting.FileSystemObject") 
+ ' Create the Outlook Application Object
+ Set objOutlook = CreateObject("Outlook.Application")
+ Set objMail = objOutlook.CreateItem(olTaskItem)
+ 'get file
+ 'date = document.getElementById("Subject").Value 
+ wo = document.getElementById("Subject1").Value: op = document.getElementById("Subject2").Value 
+ pn = document.getElementById("Subject3").Value: sn = document.getElementById("Subject4").Value 
+ ptp = document.getElementById("Subject5").Value: ptd = document.getElementById("SRID").Value
+ summary = document.getElementById("note").Value: strBody = document.getElementById("body").Value
+ ' Set the Message Properties
+ With objMail
+        '.To = ToAddress ' Send To Address
+        '.CC = CCAddress ' Add a CC Address
+        '.BCC = BCCAddress ' Add a BCC Address
+        .Subject = "DevTrack: PTD-" & ptd & " :  w/o: " & wo & " op: " & op _
+		&  " p/n: "& pn &" s/n: "& sn & "; "& cstr(FormatDateTime(now)) ' Set the Message Subject
+		.Categories = "@DevTrack"
+		.startdate = cstr(FormatDateTime(now))
+		.DueDate = Now + 15
+		.status = 1
+		.Importance = 2 ' high
+		'.Importance = 0 ' low
+		'.Importance = 1 ' normal
+		.ReminderSet = true
+		.ReminderTime = Now + 7
+		.TotalWork = 60
+		.ActualWork = 30
+		.Companies = "Production Test Group"
+		.Owner = "Clemente Reyes"
+        '.Body = Scramble(,seed) & vbCrLf ' Set the Message Body
+		 '@@@@@@@@@@@@@@  Add the body  @@@@@@@@@@@@@@
+ 
+ '|---------------------------- Start of BODY ----------------------------------------------
+ 	strMsg = cstr(FormatDateTime(now))  & ""  & vbcrlf
+ 	strMsg =  strMsg  & "w/o: " & wo & "  Operation: "& op  & vbcrlf
+  	'strMsg =  strMsg  &  "Nomenclature: "&%mfg% "  & vbcrlf
+ 	strMsg =  strMsg  &  "p/n: "& pn & vbcrlf
+ 	strMsg =  strMsg  &  "Serial #: "& sn & vbcrlf
+ 	strMsg =  strMsg  &  "PTP #: "& ptp & vbcrlf
+ 	strMsg =  strMsg  &  "NCR #: " & ptd  & vbcrlf
+  	strMsg =  strMsg  &  "Comment:  "  & vbcrlf
+ 	strMsg =  strMsg  &  "-Description of the PASS/failure [e.g.:  HI/Lo, should be, Measured value, etc...]  "  & vbcrlf
+ 	strMsg =  strMsg  &  "Summary: "& summary & vbcrlf
+	strMsg =  strMsg  &  "   "& strBody & vbcrlf
+	strMsg2 = strMsg2 & "" & vbcrlf
+ 	strMsg2 = strMsg2 & "" & vbcrlf
+ 	strMsg2 = strMsg2 & "Sincerely," & vbcrlf
+ 	strMsg2 = strMsg2 & "          Clemente Reyes" & vbcrlf
+ 	strMsg2 = strMsg2 & "          Technician, Production Test" & vbcrlf
+ 	strMsg2 = strMsg2 & "          Test Group" & vbcrlf
+ 	strMsg2 = strMsg2 & "          General Contract, Inc." & vbcrlf
+ 	strMsg2 = strMsg2 & "          13500 Stowe Way" & vbcrlf
+ 	strMsg2 = strMsg2 & "          Poway, CA  92064" & vbcrlf
+ 	strMsg2 = strMsg2 & " " & vbcrlf
+ 	strMsg2 = strMsg2 & "          Office: " & vbcrlf
+ 	strMsg2 = strMsg2 & "          Production Test" & vbcrlf
+ 	strMsg2 = strMsg2 & "          Email:  clementereyes@yahoo.com" & vbcrlf
+ '|----------------------------- End of Body ---------------------------------------------
+
+		.Body = strMsg & vbCrLf & strMsg2 ' Set the Message Body
+        .Display ' Show the Message
+        '.Send ' Send the Message
+    End With
+    ' Clean Up
+    Set objMail = Nothing
+    Set objOutlook = Nothing
+End Sub
+'/********************************************
+'// start of addons VBscript
+'/********************************************/
+	function Scramble (strText, lngSeed)
+     Dim L,intRand,bytASC
+     Rnd(-1) : Randomize ABS(lngSeed)
+     For L = 1 To Len(strText)
+         bytASC=Asc(Mid(strText, L))
+         If bytASC=126 then bytASC=34
+         intRand = bytASC + ((Int(Rnd(1) * 160) - 80) * SGN(lngSeed)) 
+         If intRand <= 31 Then 
+             intRand = 125 - (31 - intRand)
+         ElseIf intRand >= 126 Then
+             intRand = 32 + (intRand - 126)
+         End If
+         If intRand=34 then intRand=126
+         Scramble = Scramble & Chr(intRand)
+     Next
+ End function
+</script>
+<body onload="setup();">
+ <!--{{InsertControlsHere}}-Do not remove this line-->
+<form name="noteform" onsubmit="return true;" >
+<div id="subject" Align="left" >
+Date:<br>
+<input id="dt" type="text" name="subject" style="width: 20%;"><br>
+w/o or Project #:<input  type="text" name="subject1" style="width: 35%;" Value="workorder # or Project #">
+OP:<input  type="text" name="subject2" style="width: 25%;" Value="Operation"><br>
+P/N:<input  type="text" name="subject3" style="width: 25%;" Value="Part Number">
+S/N:<input  type="text" name="subject4" style="width: 25%;" Value="Serial Number "><br>
+PTP#:<input  type="text" name="subject5" style="width: 25%;" Value="PTP#"><br>
+Devtrack #: PTD-<input type="text" name="SRID" id="SRID" style="width: 25%;" Value="PTD#"><br>
+Summary:<br>
+<textarea id="inputText" name="note" onKeyPress=check_length(this.form); onKeyDown=check_length(this.form);></textarea><br>
+<input size=1 value=100 name=text_num> Characters Left<br>Body:<br>
+<textarea id="inputTextbody" name="body" ></textarea></div>
+</form>
+<div style="position:absolute;top:680px;text-align:right;width:100%;padding-right:10px;">
+<button onclick="sSendMail();">SAVE</button> <button onclick="window.close();">CANCEL</button>
+</div>
+<div align=left><font color=#18335e> generated by : GTD_DEVTRACK_TASK_revAG.hta </font></div>
+</body>
+</html>
