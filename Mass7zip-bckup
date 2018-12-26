@@ -13,7 +13,7 @@ REM BackupScript
 REM Version 1.01, Updated: 2008-05-21
 REM By Jason Faulkner (articles[-at-]132solutions.com)
 :::::http://www.pcmech.com/article/windows-batch-script-to-backup-data/
-:::::::::http://jasonfaulkner.com/RandomChars.aspx
+:::::::::http://jasonfaulkner.com/
 
 REM Performs full or incremental backups of folders and files configured by the user.
 
