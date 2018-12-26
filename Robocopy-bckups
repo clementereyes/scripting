@@ -1,0 +1,109 @@
+::
+::https://community.spiceworks.com/topic/514474-robocopy-xd-from-text-file
+@Echo off
+setlocal enabledelayedexpansion
+mode 120,15
+color 0e
+::**** start debug syntax ***
+::call :main >debug_robocopy_work_list_revC.txt 2>&1
+::pause
+::exit/b
+::**** end debug syntax ***
+:main
+@Echo Off
+SETLOCAL EnableDelayedExpansion
+::: -- Version History �-
+:::(Major version).(Minor version).(Revision number).(Build number) 
+:::          XX.XXX         YYYYMMDD Author Description
+SET "version=01.0.00-beta" &:20150917 C.Reyes   initial version, providing the framework :robocopy_list.bat
+SET "version=1.0.1"      &:20150918 C.Reyes   framework ready :robocopy_list_revB.bat
+SET "version=1.0.2"      &:20150918 C.Reyes   Added version history :robocopy_list_revC.bat
+SET "version=1.0.3"      &:20150918 C.Reyes   syntax clean-up :robocopy_list_revC.bat
+SET "version=1.0.4"      &:20150922 C.Reyes   syntax clean-up :robocopy_work_list_revC.bat
+SET "version=1.0.5"      &:20150922 C.Reyes   syntax clean-up :robocopy_work_list_revD.bat
+SET "version=1.0.6"      &:20150924 C.Reyes   refined exclude list :robocopy_work_list_revE.bat
+SET "version=1.0.7"      &:20151203 C.Reyes   added registry copy :robocopy_work_list_revF.bat
+SET "version=1.0.7"      &:20161203 C.Reyes   added copy *.reg, *.xlsm, *.docm  :robocopy_work_list_revF.bat
+SET "title=%~nx0 - version %version%"
+title %title%
+::Date and Time format
+FOR /F "TOKENS=1* DELIMS= " %%A IN ('DATE/T') DO SET CDATE=%%B
+FOR /F "TOKENS=1,2 eol=/ DELIMS=/ " %%A IN ('DATE/T') DO SET mm=%%B
+FOR /F "TOKENS=1,2 DELIMS=/ eol=/" %%A IN ('echo %CDATE%') DO SET dd=%%B
+FOR /F "TOKENS=2,3 DELIMS=/ " %%A IN ('echo %CDATE%') DO SET yyyy=%%B
+if %MM%==01 set MM=Jan
+if %MM%==02 set MM=Feb
+if %MM%==03 set MM=Mar
+if %MM%==04 set MM=Apr
+if %MM%==05 set MM=May
+if %MM%==06 set MM=Jun
+if %MM%==07 set MM=Jul
+if %MM%==08 set MM=Aug
+if %MM%==09 set MM=Sep
+if %MM%==10 set MM=Oct
+if %MM%==11 set MM=Nov
+if %MM%==12 set MM=Dec
+
+SET date=%dd%%mm%%yyyy%
+
+@For /F "tokens=1,2,3 delims=:,. " %%A in ('echo %time%') do @(
+Set Hour=%%A
+Set Min=%%B
+Set Sec=%%C
+Set Allm=%%A.%%B.%%C
+)
+@For /F "tokens=3 delims=: " %%A in ('time /t ') do @(
+Set AMPM=%%A
+)
+::End of Date and time format
+if NOT EXIST e:\folder goto :notthere
+Echo.
+cls
+echo   ������������������������ͻ
+echo   �                        �
+echo   �    Please Wait...      �
+echo   �                        �
+echo   �   Thank You for        �
+echo   �    your patience.      �
+echo   ������������������������ͼ
+Set file=Exclude.txt
+Set src=U:\folder
+Set dest=E:\folder
+
+for /f "usebackq tokens=* " %%D in (%file%) do (
+    If NOT "!dirs!"=="" (
+        Set dirs=!dirs! "%%D"
+    ) Else (
+        Set dirs="%%D"
+    )
+)
+:: ##### Test Dry Run to find errors #####
+:: #####  Uncomment to validate and comment active test...
+::Robocopy.exe "%src%" "%dest%" *.cmd *.bat *.HTA *.vbs *.reg /mir /S /R:4 /W:5 /MT:32 /IS /XD !dirs! /tee /L /ETA /LOG:"Work_log.txt" 
+:: ##### Active test line...
+Robocopy.exe "%src%" "%dest%" *.cmd *.bat *.HTA *.vbs *.reg *.docm *.xlsm /S /np /R:4 /W:5 /MT:32 /Z /IS /xo /xx /XD !dirs! /LOG:"%date%_%Allm%%AMPM%_work_log.txt"
+mode 30,15
+color 0e
+cls
+echo   ������������������������ͻ
+echo   �                        �
+echo   �       DONE...          �
+echo   �                        �
+echo   �   Thank You for        �
+echo   �    your patience.      �
+echo   ������������������������ͼ
+Pause
+exit
+:notthere
+mode 30,15
+color 0e
+cls
+echo   ������������������������ͻ
+echo   �        Folder          �
+echo   �       Not There...     �
+echo   �                        �
+echo   �   Login Please!        �
+echo   �                        �
+echo   ������������������������ͼ
+Pause
+exit
