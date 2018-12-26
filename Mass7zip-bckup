@@ -1,0 +1,140 @@
+::**** start debug syntax ***
+::call :main >debug_Logfile_BackupScript_revC.txt 2>&1
+::pause
+::exit/b
+::**** end debug syntax ***
+:main
+rem @echo off
+mode 50,3
+color 0e
+echo.   
+echo.   This will take awhile. Please Wait....
+REM BackupScript
+REM Version 1.01, Updated: 2008-05-21
+REM By Jason Faulkner (articles[-at-]132solutions.com)
+:::::http://www.pcmech.com/article/windows-batch-script-to-backup-data/
+:::::::::http://jasonfaulkner.com/RandomChars.aspx
+
+REM Performs full or incremental backups of folders and files configured by the user.
+
+REM Usage---
+REM   > BackupScript
+
+::: -- Version History �-
+:::(Major version).(Minor version).(Revision number).(Build number) 
+:::          XX.XXX         YYYYMMDD Author	 Description
+SET "version=01.01-beta   &:20080521 J.Faulkner  initial version, providing the framework
+SET "version=01.0.1"    &:20121031 C.Reyes     framework ready
+SET "version=01.0.1"    &:20121031 C.Reyes     Set default settings
+SET "version=01.0.2"    &:20141208 C.Reyes     Added windows 7 parameters
+SET "version=01.1.0"    &:20160828 C.Reyes     modded xcopy to robocopy windows 7 parameters
+SET "version=01.1.1"    &:20160828 C.Reyes     changed date format to accomomdate robocopy windows 7 parameters  
+SET "title=%~nx0 - version %version%"
+title %title%
+
+SETLOCAL ENABLEEXTENSIONS ENABLEDELAYEDEXPANSION
+
+REM ---Configuration Options---
+
+REM Folder location where you want to store the resulting backup archive.
+REM This folder must exist. Do not put a '\' on the end, this will be added automatically.
+REM You can enter a local path, an external drive letter (ex. F:) or a network location (ex. \\server\backups)
+:: windows XP OS
+::SET BackupStorage=C:\Bkup_assembly_logfile
+:: Windows 7 OS
+SET BackupStorage=x:\folder
+
+
+REM Which day of the week do you want to perform a full backup on?
+REM Enter one of the following: Sun, Mon, Tue, Wed, Thu, Fri, Sat, *
+REM Any day of the week other than the one specified below will run an "incremental" backup.
+REM If you enter '*', a full backup will be run every time.
+SET FullBackupDay=*
+
+REM Location where 7-Zip is installed on your computer.
+REM The default is in a folder, '7-Zip' in your Program Files directory.
+SET InstallLocationOf7Zip=%ProgramFiles%\7-Zip
+
+REM +-----------------------------------------------------------------------+
+REM | Do not change anything below here unless you know what you are doing. |
+REM +-----------------------------------------------------------------------+
+
+REM Usage variables.
+Set logs=x:\folder\
+SET exe7Zip=%InstallLocationOf7Zip%\7z.exe
+SET dirTempBackup=%TEMP%\backup
+SET filBackupConfig=BackupConfig.txt
+
+REM Validation.
+IF NOT EXIST %filBackupConfig% (
+  ECHO No configuration file found, missing: %filBackupConfig%
+  GOTO End
+)
+IF NOT EXIST "%exe7Zip%" (
+  ECHO 7-Zip is not installed in the location: %dir7Zip%
+  ECHO Please update the directory where 7-Zip is installed.
+  GOTO End
+)
+
+REM Backup variables.
+FOR /f "tokens=1,2,3,4 delims=/ " %%a IN ('date /t') DO (
+  SET DayOfWeek=%%a
+  SET NowDate=%%d-%%b-%%c
+  SET FileDate=%%d%%b%%c
+  rem SET FileDate=%%b-%%c-%%d
+)
+
+IF {%FullBackupDay%}=={*} SET FullBackupDay=%DayOfWeek%
+IF /i {%FullBackupDay%}=={%DayOfWeek%} (
+  SET txtBackup=Full
+  SET swXCopy=/e
+) ELSE (
+  SET txtBackup=Incremental
+  SET swXCopy=/s /maxage:%FileDate%
+)
+
+ECHO Starting to copy files.
+IF NOT EXIST "%dirTempBackup%" MKDIR "%dirTempBackup%"
+FOR /f "skip=1 tokens=*" %%A IN (%filBackupConfig%) DO (
+  SET Current=%%~A
+  IF NOT EXIST "!Current!" (
+    ECHO ERROR! Not found: !Current!
+  ) ELSE (
+    ECHO Copying: !Current!
+    SET Destination=%dirTempBackup%\!Current:~0,1!%%~pnxA
+    REM Determine if the entry is a file or directory.
+    IF "%%~xA"=="" (
+      REM Directory.
+      rem roboCOPY "!Current!" "!Destination!" /copyall /B /xo /nc /np /ns /ia:RASHCE /r:4 /w:5 /xx /is /Mt:32 %swXCopy%
+	  roboCOPY "!Current!" "!Destination!" /xo /nc /ns /ia:RASHCE /r:4 /w:5 /xx /is /MT:32 %swXCopy% /log:"%logs%%nowdate%_Full_log.txt"
+    ) ELSE (
+      REM File.
+      COPY /v /y "!Current!" "!Destination!"
+	  echo did not work...
+	  pause
+    )
+  )
+)
+ECHO Done copying files.
+ECHO.
+
+SET BackupFileDestination=%BackupStorage%\Backup_%FileDate%_%txtBackup%.zip
+
+REM If the backup file exists, remove it in favor of the new file.
+IF EXIST "%BackupFileDestination%" DEL /f /q "%BackupFileDestination%"
+
+ECHO Compressing backed up files. (New window)
+REM Compress files using 7-Zip in a lower priority process.
+START "Compressing Backup. DO NOT CLOSE" /belownormal /wait "%exe7Zip%" a -tzip -r -mx5 "%BackupFileDestination%" "%dirTempBackup%\"
+ECHO Done compressing backed up files.
+ECHO.
+
+ECHO Cleaning up.
+IF EXIST "%dirTempBackup%" RMDIR /s /q "%dirTempBackup%"
+ECHO.
+
+:End
+ECHO Finished.
+ECHO.
+
+ENDLOCAL
