@@ -1,0 +1,214 @@
+<!--
+https://www.w3schools.com/howto/howto_js_todolist.asp
+-->
+<html><Head><style>
+/* Include the padding and border in an element's total width and height */
+* {
+  box-sizing: border-box;
+}
+
+/* Remove margins and padding from the list */
+ul {
+  margin: 0;
+  padding: 0;
+}
+ol {
+  margin: 0;
+  padding: 0;
+  margin-left: 30px;
+}
+/* Style the list items */
+ul li {
+  cursor: pointer;
+  position: relative;
+  padding: 12px 8px 12px 40px;
+  background: #eee;
+  font-size: 50px;
+  transition: 0.2s;
+  margin-left: 30px;
+
+  /* make the list items unselectable */
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+   user-select: none;
+}
+
+/* Set all odd list items to a different color (zebra-stripes) */
+ul li:nth-child(odd) {
+  background: #f9f9f9;
+  font-weight: 900;
+  font-size: 50px;
+}
+
+/* Darker background-color on hover */
+ul li:hover {
+  background: #ddd;
+}
+/* When clicked on, add a background color and strike out text */
+ul li.checked {
+  background: #888;
+  color: #fff;
+  /*color: red;*/
+  text-decoration: line-through;
+  margin-left: 20px;
+}
+/* Add a "checked" mark when clicked on */
+ul li.checked::before {
+  content: '';
+  position: absolute;
+  border-color: red;
+  border-style: solid;
+  border-width: 0 5px 5px 0;
+  top: 10px;
+  left: 16px;
+  transform: rotate(45deg);
+  height: 60px;
+  width: 7px;
+  font-size: 110%;
+  font-weight: 900;
+}
+/* Style the close button */
+.close {
+  position: absolute;
+  right: 0;
+  top: 0;
+  padding: 12px 16px 12px 16px;
+}
+
+.close:hover {
+  background-color: #f44336;
+  color: white;
+}
+/* Style the header */
+.header {
+  background-color: #99FF00;
+  padding: 10px 40px;
+  color: black;
+  text-align: top;
+  font-weight: 900;
+  font-size: 40px;
+}
+/* Clear floats after the header */
+.header:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+/* Style the input */
+input {
+  margin: 0;
+  border: none;
+  border-radius: 0;
+  width: 75%;
+  padding: 10px;
+  float: left;
+  font-size: 50px;
+}
+/* Style the "Add" button */
+.addBtn {
+  padding: 10px;
+  width: 25%;
+  background: #d9d9d9;
+  color: #555;
+  float: left;
+  text-align: center;
+  font-size: 50px;
+  cursor: pointer;
+  transition: 0.3s;
+  border-radius: 0;
+}
+.addBtn:hover {
+  background-color: #bbb;
+}
+</style><script>
+var fileName = location.href.split("/").slice(-1); 
+</script></head><body><div id="myDIV" class="header">
+  <h3>CostCo List</h3>
+  <input type="text" id="myInput" placeholder="Title...">
+  <span onclick="newElement()" class="addBtn">Add</span>
+</div><div align=center><script language="javascript"><!--
+var today = new Date();
+document.write(today);
+//--></script></div>
+
+<ul id="myUL">
+  <li>Hershy Chocolate Milk</li>
+ <!-- /*<li class="checked">Pay bills</li>*/-->
+  <li>Mac n cheese</li>
+  <li>Paper Plates</li>  
+  <li>Buy eggs x2</li>
+  <li>Yakisoba</li>
+  <li>Kirkland:Bacon 4 packet</li>
+  <li>Jasmine rice 50lbs</li>
+ <!-- /*<li class="checked">Pay bills</li>*/-->
+  <li>raisin Bagel</li>
+  <li>Cheese Bagel</li>
+  <li>Dino nuggets</li>
+  <li>Ham</li>
+  <li>Arrowhead: water 24ct</li>
+  <li>strawberry</li>
+  <li>Banana</li>
+  <li>Oranges: clementines</li>
+  <li>Bagel Bites</li>
+  <li>Honeynut Cheerios</li>
+  <li>Organic Ketchup</li>
+  <li>Trail Mix</li>
+</ul>
+<script>
+// Create a "close" button and append it to each list item
+var myNodelist = document.getElementsByTagName("LI");
+var i;
+for (i = 0; i < myNodelist.length; i++) {
+  var span = document.createElement("SPAN");
+  var txt = document.createTextNode("\u00D7");
+  span.className = "close";
+  span.appendChild(txt);
+  myNodelist[i].appendChild(span);
+}
+
+// Click on a close button to hide the current list item
+var close = document.getElementsByClassName("close");
+var i;
+for (i = 0; i < close.length; i++) {
+  close[i].onclick = function() {
+    var div = this.parentElement;
+    div.style.display = "none";
+  }
+}
+
+// Add a "checked" symbol when clicking on a list item
+var list = document.querySelector('ul');
+list.addEventListener('click', function(ev) {
+  if (ev.target.tagName === 'LI') {
+    ev.target.classList.toggle('checked');
+  }
+}, false);
+
+// Create a new list item when clicking on the "Add" button
+function newElement() {
+  var li = document.createElement("li");
+  var inputValue = document.getElementById("myInput").value;
+  var t = document.createTextNode(inputValue);
+  li.appendChild(t);
+  if (inputValue === '') {
+    alert("You must write something!");
+  } else {
+    document.getElementById("myUL").appendChild(li);
+  }
+  document.getElementById("myInput").value = "";
+
+  var span = document.createElement("SPAN");
+  var txt = document.createTextNode("\u00D7");
+  span.className = "close";
+  span.appendChild(txt);
+  li.appendChild(span);
+
+  for (i = 0; i < close.length; i++) {
+    close[i].onclick = function() {
+      var div = this.parentElement;
+      div.style.display = "none";
+    }
+  }
+}
+document.write(fileName);</script></body></html>
