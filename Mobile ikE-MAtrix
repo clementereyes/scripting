@@ -26,7 +26,7 @@ document.write(today);
 </script></div>
 <div align="center" style="font-size:20px"><B>ikE-Matrix</B></div>
     <div class="part1">
-  <div align="center" style="font-size:15px" >Urgent & Important </div>
+  <div align="center" style="font-size:15px" ><u>Urgent & Important</u> </div>
    <div contenteditable>
 <ol id="myUL"> 
  </input><li>Sample #1</li>
@@ -36,7 +36,7 @@ document.write(today);
   <li>Task#4</li>
 </ol></div></div>
     <div class="part2">
-	  <div align="center" style="font-size:15px" >Important & Not urgent   </div>
+	  <div align="center" style="font-size:15px" ><u>Important & Not urgent</u></div>
 	  <div contenteditable>
 <ol id="myUL"> 
  </input><li>Sample #1</li>
@@ -46,7 +46,7 @@ document.write(today);
   <li>Task#4</li>
 </ol></div></div>
     <div class="part3"  >
-		  <div align="center" style="font-size:15px" >Urgent & Unimportant   </div>
+		  <div align="center" style="font-size:15px" ><u>Urgent & Unimportant</u>   </div>
 		  <div contenteditable>
 <ol id="myUL"> 
  </input><li>Sample #1</li>
@@ -56,7 +56,7 @@ document.write(today);
   <li>Task#4</li>
 </ol></div></div>
     <div class="part4" >
-		  <div align="center" style="font-size:13px" >Unimportant & Not urgent</div>
+		  <div align="center" style="font-size:13px" ><u>Unimportant & Not urgent</u></div>
 		  <div contenteditable>
 <ol id="myUL"> 
  </input><li>Sample #1</li>
